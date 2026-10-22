@@ -9,6 +9,7 @@ A site that shows developers and enterprises how to build agent solutions proper
 | Path | What it holds |
 |---|---|
 | [docs/plan/site-structure.md](docs/plan/site-structure.md) | The site plan: navigation, pages, pattern page template, demo approach |
+| [docs/plan/scaffold.md](docs/plan/scaffold.md) | The Astro scaffold plan: versions, layout, content model, components, quality gates, workflows |
 | [docs/context/concept.md](docs/context/concept.md) | The source concept: stack map, six problems, Four A's, vocabulary, seven patterns and beyond |
 | [docs/context/wayfinder-demo.md](docs/context/wayfinder-demo.md) | The demo: cast, scenes, expected tokens, sample issues to fix |
 | [docs/context/decisions.md](docs/context/decisions.md) | Decisions, recommendations and open questions |

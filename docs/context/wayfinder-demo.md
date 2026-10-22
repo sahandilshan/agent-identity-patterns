@@ -107,4 +107,14 @@ A site about doing this properly cannot replay a sample that does it improperly.
 - **Scheduler:** do not enable `UPGRADE_SCHEDULER_ENABLED`. Failed cycles loop and resend emails.
 - **Denied consent:** a denied permission persists for the agent session with no re-consent prompt.
 - **First chat message:** the README says there is no popup, but the first chat message opens one.
+
 - **No pattern 7 scene.**
+
+Recheck at main `6f774bb5` (2026-10-22), by reading code:
+
+- Still present: the chat gate (`agent.ts:319-322`, used by `POST /chat` at `:1007` and `GET /chat/access` at `:1465`), the conditional backend audience check (`auth.js:94-100`, with no `THUNDER_AUDIENCE` in `backend/.env.example`) and the README key name (`README.md:216`).
+- Backend expiry: checked only when the token carries `exp` (`auth.js:86`). `validateIdToken` checks issuer and expiry but never audience (`auth.js:103-138`).
+- CIBA order: `process_upgrade` still fails while the Business flight is unavailable (`mcp.js:498-499`). The README's try-out flow runs `trigger-upgrade.sh` before `business-class.sh unlock` (`README.md:378-392`), so following it fails. The lock and unlock scripts exist.
+- Scheduler: after a denied or expired CIBA result, a poll error, or a failed `process_upgrade`, the request stays `pending` (`agent.ts:1300`, `1324-1328`; `mcp.js:498-499`). The cycle reports work done, so the loop retries at once without its 30-second sleep (`agent.ts:1411-1413`) and sends email again. The README now tells users to enable the scheduler for the CIBA scene.
+- `POST /api/demo/process-upgrades` has no authentication check and starts CIBA, which sends email (`agent.ts:1520-1529`).
+- Not confirmed by reading: denied consent and the first-chat popup. thunder-id/thunderid#5006 (popup on non-delegated requests) is closed. Check both at runtime.

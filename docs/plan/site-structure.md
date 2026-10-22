@@ -16,9 +16,9 @@ The problem · Patterns · Live demo · Build it with ThunderID
 - **Stack map (signature visual and navigation):** the agent in the centre.
   - Inbound: users, applications, other agents.
   - Outbound: LLM providers, MCP servers and APIs, external SaaS, sub-agents.
-  - Every arrow is clickable and opens the pattern that secures it.
+  - Every arrow is clickable. It opens a panel with the question the arrow raises, what goes wrong without a pattern, and every pattern on that arrow (decided 2026-10-22 with the approved mock). Agent to MCP server opens a "whose authority?" chooser.
 - **Six problems strip:** each card names the failure and the A it maps to.
-- **Pattern grid:** seven patterns plus beyond-the-seven, each with a status chip.
+- **Pattern grid:** the patterns in their stack-map groups, by name, each with a status chip.
 - **Demo teaser:** the four Wayfinder scenes as thumbnails.
 
 ## 2. The problem
@@ -47,7 +47,7 @@ The patterns are grouped by where they sit on the stack map, so the home visual 
 | Outbound, own authority | Act on its own authority (4) | Supported |
 | Outbound, user authority | Just-in-time user delegation (5) | Supported |
 | Outbound, user authority | Out-of-band approval with CIBA (6) | Supported, poll mode |
-| Outbound, user authority | Multi-agent delegation (7) | Supported via token exchange |
+| Outbound, user authority | Multi-agent delegation (7) | Partial: token exchange drops the subject token's `act`, so successive exchanges do not extend the delegation chain (rechecked at main `6f774bb5`, thunder-id/thunderid#5662) |
 | The tools it calls | Secure an MCP server (1) | Supported, authorization server role |
 | Across boundaries | Cross-domain access with ID-JAG | Supported with caveats |
 | Across boundaries | LLM provider access without static keys | Documented pattern |
@@ -124,6 +124,6 @@ The patterns are grouped by where they sit on the stack map, so the home visual 
 
 ## Open decisions
 
-- **Where it lives:** decided. It is this repository, on Sahan's personal GitHub account, published with GitHub Pages. Still open: a custom domain, and how the ThunderID name and logo may be used (LF trademark rules).
+- **Where it lives:** decided. It is this repository, on Sahan's personal GitHub account, published with GitHub Pages. The domain and logo approach were decided on 2026-10-22 ([decisions.md](../context/decisions.md)); asking the maintainers about the logo is still open.
 - **Voice:** standards-first with ThunderID as the implementation (recommended for credibility), or ThunderID-first.
-- **Pattern order:** keep the concept's numbering (1 to 7), or adopt the stack-map grouping above.
+- **Pattern order:** decided on 2026-10-22: the stack-map grouping above, with names and slugs and no public numbers. The bracketed numbers are internal IDs only.

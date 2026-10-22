@@ -139,7 +139,7 @@ Patterns 1 to 6 appear in the Wayfinder demo. Pattern 7 is explained but not dem
 
 ### Pattern 7: Multi-agent authorization
 
-- **Status in ThunderID:** supported via token exchange (RFC 8693).
+- **Status in ThunderID:** supported via token exchange (RFC 8693), as recorded at `8459a404`. Relabelled Partial on 2026-10-22; see the recheck below.
 - **How it works:** the worker agent exchanges the user's delegated token, presenting the delegating agent's token as the actor and asking for a narrower scope.
 - **Token:**
 
@@ -151,6 +151,7 @@ Patterns 1 to 6 appear in the Wayfinder demo. Pattern 7 is explained but not dem
   - The chain nests only when the actor token already carries the earlier agent. Each exchange builds `act` from the actor token only.
   - There is no registered parent and sub-agent relationship yet.
   - There is no Wayfinder scene for this pattern yet.
+- **Recheck at main `6f774bb5` (2026-10-22):** the site labels this pattern Partial. The subject token's `act` is dropped (thunder-id/thunderid#5662). `act` comes from the actor token, nesting that token's own `act` if it has one (`builder.go:364-378`). With no actor token, an agent records itself as `act` (`token_exchange.go:271`); this fallback was already present at `8459a404`. So the flow under "How it works" yields `act: { sub: <orchestrator> }`, with the worker only as `client_id`, not the nested token shown above.
 
 ## 7. Beyond the seven
 
