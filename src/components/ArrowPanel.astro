@@ -1,0 +1,138 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { ArrowOptionView } from '../lib/data';
+import { href } from '../lib/url';
+import StatusChip from './StatusChip.astro';
+import TokenClaims from './TokenClaims.astro';
+
+/** One arrow's panel: the question it raises, the failure, and every pattern on it. */
+interface Props {
+  arrow: CollectionEntry<'arrows'>;
+  options: ArrowOptionView[];
+  covers: string[];
+}
+const { arrow, options, covers } = Astro.props;
+const headingId = `panel-${arrow.id}-title`;
+---
+
+<section class="panel" data-arrow={arrow.id} aria-labelledby={headingId}>
+  <div class="panel-head">
+    <div class="ask">
+      <p class="eyebrow accent">{arrow.data.eyebrow}</p>
+      <h3 id={headingId} tabindex="-1">{arrow.data.question}</h3>
+    </div>
+    <div class="why">
+      <p><b>Without a pattern:</b> {arrow.data.without}</p>
+      <p class="covers mono">Covers {covers.join(' · ')}</p>
+    </div>
+  </div>
+  <ul class="options" role="list">
+    {
+      options.map((o) => (
+        <li class="option">
+          <p class="eyebrow">{o.condition}</p>
+          <h4>
+            <a href={href(`patterns/${o.pattern.id}/`)}>{o.pattern.data.title}</a>
+          </h4>
+          <TokenClaims tokens={o.tokens} />
+          {o.standards.length > 0 && <p class="std mono">{o.standards.map((s) => s.data.name).join(' · ')}</p>}
+          <div class="foot">
+            <StatusChip id={o.pattern.data.status.id} qualifier />
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .panel {
+    display: none;
+    flex-direction: column;
+    gap: 24px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+  }
+  .panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 48px;
+    align-items: flex-start;
+  }
+  .ask,
+  .why {
+    flex: 1 1 360px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .accent {
+    color: var(--accent);
+  }
+  h3 {
+    font-size: 27px;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    font-weight: 700;
+  }
+  h3:focus {
+    outline: none;
+  }
+  .why p {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .why .covers {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .options {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+    gap: 16px;
+  }
+  .option {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: var(--surface-soft);
+  }
+  .option .eyebrow {
+    font-size: 11px;
+  }
+  h4 {
+    font-size: 18px;
+    line-height: 1.25;
+    font-weight: 700;
+  }
+  h4 a {
+    color: var(--ink);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  h4 a:hover {
+    color: var(--accent);
+  }
+  .std {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .foot {
+    margin-top: auto;
+  }
+  @supports not selector(:has(*)) {
+    .panel {
+      display: flex;
+    }
+  }
+</style>

@@ -1,0 +1,23 @@
+---
+import { sceneFor } from '../../lib/data';
+import Pending from './Pending.astro';
+import Section from './Section.astro';
+
+// The [slug] page sets Astro.locals.pattern before rendering the MDX body.
+const pattern = Astro.locals.pattern;
+if (!pattern) throw new Error('SeeItRun must render inside a pattern page');
+const scene = await sceneFor(pattern.id);
+---
+
+<Section id="see-it-run" title="See it run">
+  {
+    scene ? (
+      <Pending section="See it run">
+        Wayfinder scene {scene.data.order}, “{scene.data.title}”. The recorded run is published once it is captured against
+        the target ThunderID release (PR 4).
+      </Pending>
+    ) : (
+      <p>No Wayfinder scene shows this pattern yet.</p>
+    )
+  }
+</Section>

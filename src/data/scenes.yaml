@@ -1,0 +1,39 @@
+# The Wayfinder scenes (docs/context/wayfinder-demo.md). `preview` shows the
+# expected claims, read from the sample code, until a recorded trace replaces
+# it. The launch gate fails while any scene has no trace.
+
+chat-access:
+  order: 1
+  title: Who may talk to the Concierge
+  pattern: govern-callers
+  preview:
+    - { claim: sub, value: john.doe, kind: person }
+    - { claim: aud, value: …/chat, kind: resource }
+  note: "Jane is refused: 403"
+
+deals:
+  order: 2
+  title: Deals on the agent's own authority
+  pattern: own-authority
+  preview:
+    - { claim: sub, value: concierge, kind: agent }
+    - { claim: act, value: none, kind: plain }
+    - { claim: aud, value: booking MCP, kind: resource }
+
+booking:
+  order: 3
+  title: Booking on John's behalf
+  pattern: jit-delegation
+  preview:
+    - { claim: sub, value: john.doe, kind: person }
+    - { claim: act, value: concierge, kind: agent }
+    - { claim: aud, value: booking MCP, kind: resource }
+
+upgrade:
+  order: 4
+  title: Upgrade approved out of band
+  pattern: ciba-approval
+  preview:
+    - { claim: sub, value: john.doe, kind: person }
+    - { claim: act, value: upgrade-agent, kind: agent }
+  note: Approved by email

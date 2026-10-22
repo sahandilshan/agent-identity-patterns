@@ -1,0 +1,120 @@
+# The arrows on the home stack map. IDs must match the geometry in
+# src/components/StackMap.astro (src/schemas/map.ts, ARROW_IDS).
+# Each option is one pattern that secures the arrow, in chooser order.
+# The Four A's an arrow covers are derived from its patterns.
+
+agent:
+  side: agent
+  order: 1
+  label: The agent
+  ask: Its own identity
+  eyebrow: The agent itself
+  question: Does the agent have an identity of its own?
+  without: Its actions show up as a user or a shared service account, so no one can tell the agent acted.
+  options:
+    - condition: Before any arrow
+      pattern: register-agents
+      tokens:
+        - { claim: sub, value: agent, kind: agent }
+
+inbound:
+  side: inbound
+  order: 1
+  label: Users, apps and agents
+  ask: Who may call it?
+  eyebrow: Users, applications and agents → the agent
+  question: Who may call the agent?
+  without: The agent is an endpoint too. Without its own access control, anyone who can reach it can use it.
+  options:
+    - condition: Every caller
+      pattern: govern-callers
+      tokens:
+        - { claim: aud, value: agent endpoint, kind: resource }
+        - { claim: scope, value: "agent:access", kind: plain }
+
+llm:
+  side: outbound
+  order: 1
+  label: LLM providers
+  ask: No static keys
+  eyebrow: The agent → LLM providers
+  question: How does the agent prove itself to a model API?
+  without: A static provider key sits in the agent's config. Whoever copies it can call the model as the agent.
+  options:
+    - condition: Provider supports workload identity federation
+      pattern: llm-keyless
+      tokens:
+        - { claim: sub, value: agent, kind: agent }
+
+mcp:
+  side: outbound
+  order: 2
+  label: MCP servers and APIs
+  ask: Whose authority?
+  eyebrow: The agent → MCP servers and APIs
+  question: Whose authority does the agent carry?
+  without: One shared key for every call. The server cannot tell the agent from a user, or which user it acts for.
+  options:
+    - condition: No user needed
+      pattern: own-authority
+      tokens:
+        - { claim: sub, value: agent, kind: agent }
+    - condition: The user is here
+      pattern: jit-delegation
+      tokens:
+        - { claim: sub, value: user, kind: person }
+        - { claim: act, value: agent, kind: agent }
+    - condition: The user is away
+      pattern: ciba-approval
+      tokens:
+        - { claim: sub, value: user, kind: person }
+        - { claim: act, value: agent, kind: agent }
+    - condition: The server's side
+      pattern: secure-mcp
+      tokens:
+        - { claim: aud, value: this server, kind: resource }
+        - { claim: scope, value: tool permissions, kind: plain }
+
+sub:
+  side: outbound
+  order: 3
+  label: Sub-agents
+  ask: Narrow the task
+  eyebrow: The agent → sub-agents
+  question: How does a worker get only the part of the task it needs?
+  without: The worker reuses the orchestrator's token and can do everything the orchestrator could.
+  options:
+    - condition: Handing off a narrower task
+      pattern: multi-agent
+      tokens:
+        - { claim: sub, value: user, kind: person }
+        - { claim: act, value: worker, kind: agent }
+
+saas:
+  side: beyond
+  order: 1
+  label: External SaaS
+  ask: User's account
+  eyebrow: The agent → external SaaS
+  question: How does the agent use the user's own account elsewhere?
+  without: The agent holds a copy of the user's personal API token for the service.
+  options:
+    - condition: Third-party API, user's account
+      pattern: external-saas
+      tokens:
+        - { claim: sub, value: user, kind: person }
+
+domain:
+  side: beyond
+  order: 2
+  label: Another domain
+  ask: Cross a boundary
+  eyebrow: The agent → another domain's APIs
+  question: How does one sign-in carry across a trust boundary?
+  without: The user signs in and consents again in every domain, or the agent holds a long-lived key for each one.
+  options:
+    - condition: The other domain trusts your identity provider
+      pattern: id-jag
+      tokens:
+        - { claim: sub, value: user, kind: person }
+        - { claim: client_id, value: agent, kind: agent }

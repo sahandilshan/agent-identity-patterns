@@ -1,0 +1,55 @@
+# Opens an issue when ThunderID publishes a stable release that the site's
+# status claims are not verified against. GitHub disables scheduled workflows
+# in a public repository after 60 days without activity (it emails first);
+# the footer's verification stamp shows staleness publicly either way.
+name: ThunderID release check
+
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Compare the latest stable release with the target
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          latest=$(gh release list -R thunder-id/thunderid --exclude-pre-releases --exclude-drafts --limit 1 --json tagName --jq '.[0].tagName')
+          target=$(awk '$1 == "release:" { gsub(/["\047]/, "", $2); print $2; exit }' src/data/thunderid-target.yaml)
+          if [ -z "$latest" ]; then
+            echo "::error::No stable ThunderID release found"
+            exit 1
+          fi
+          if [ "$target" = "$latest" ]; then
+            echo "The target $target is the latest stable release."
+            exit 0
+          fi
+          if [ "$target" = "null" ]; then
+            title="Choose a ThunderID target release (latest stable: $latest)"
+          else
+            title="Re-verify status claims against ThunderID $latest"
+          fi
+          if gh issue list --repo "$GITHUB_REPOSITORY" --state open --limit 200 --json title --jq '.[].title' | grep -Fxq -- "$title"; then
+            echo "Already open: $title"
+            exit 0
+          fi
+          body="ThunderID $latest is the latest stable release. The site's target in src/data/thunderid-target.yaml is $target.
+
+          To move the target:
+          1. Re-verify every entry in src/data/thunderid-status.yaml against $latest, with evidence.
+          2. Re-record the Wayfinder traces against $latest.
+          3. Set release and commit in src/data/thunderid-target.yaml.
+
+          The build fails on any verified claim or trace that does not match the target."
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"

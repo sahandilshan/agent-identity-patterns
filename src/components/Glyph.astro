@@ -1,0 +1,83 @@
+---
+/** Identity icons from the mock. Decorative: the label next to them carries the meaning. */
+interface Props {
+  icon: 'person' | 'application' | 'agent' | 'llm' | 'server' | 'cloud' | 'globe' | 'key';
+  /** CSS colour, usually one of the --kind-* tokens. */
+  color: string;
+  size?: number;
+  strokeWidth?: number;
+}
+const { icon, color, size = 22, strokeWidth = 1.8 } = Astro.props;
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  aria-hidden="true"
+  fill="none"
+  stroke={color}
+  stroke-width={strokeWidth}
+  stroke-linecap="round"
+  stroke-linejoin="round"
+  style="flex: none"
+>
+  {
+    icon === 'person' && (
+      <>
+        <circle cx="12" cy="8" r="4" />
+        <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+      </>
+    )
+  }
+  {
+    icon === 'application' && (
+      <>
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M3 9h18" />
+      </>
+    )
+  }
+  {
+    icon === 'agent' && (
+      <>
+        <path d="M12 2l8.66 5v10L12 22l-8.66-5V7z" />
+        <circle cx="12" cy="12" r="3" />
+      </>
+    )
+  }
+  {
+    icon === 'llm' && (
+      <>
+        <rect x="6" y="6" width="12" height="12" rx="2" />
+        <path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4" />
+      </>
+    )
+  }
+  {
+    icon === 'server' && (
+      <>
+        <rect x="3" y="4" width="18" height="7" rx="1.5" />
+        <rect x="3" y="13" width="18" height="7" rx="1.5" />
+        <path d="M7 7.5h.01M7 16.5h.01" />
+      </>
+    )
+  }
+  {icon === 'cloud' && <path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 9.2 4.5 4.5 0 0 0 7 18z" />}
+  {
+    icon === 'globe' && (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+      </>
+    )
+  }
+  {
+    icon === 'key' && (
+      <>
+        <circle cx="8" cy="15" r="4" />
+        <path d="M11 12l9-9M16 7l3 3M14 9l2 2" />
+      </>
+    )
+  }
+</svg>

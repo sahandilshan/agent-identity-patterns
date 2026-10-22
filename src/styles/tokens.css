@@ -1,0 +1,64 @@
+/* Values from the approved home page mock-up (2026-10-22). Light theme only;
+   names describe roles so a dark theme can redefine them later. */
+:root {
+  --font-sans: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --paper: #f4f5f1;
+  --surface: #ffffff;
+  --surface-soft: #fafaf8;
+  --ink: #13171d;
+  --ink-soft: #2e333b;
+  --muted: #5a6170;
+  --muted-strong: #474c59;
+  --rule: #d5d8de;
+  --rule-strong: #cdd1d8;
+  --control-border: #c4c9d1;
+  --chip-ground: #eef0f2;
+
+  --accent: #2b44d6;
+  --accent-hover: #1c2e9e;
+  --accent-tint: #dce2fb;
+  --focus: #e58a1f;
+
+  /* One colour per kind of identity. */
+  --kind-person: #0b7a5c;
+  --kind-application: #6a4fa3;
+  --kind-agent: var(--accent);
+  --kind-resource: #a85207;
+  --kind-idp: var(--ink);
+
+  /* Stack map. */
+  --map-dot: #dcdfe4;
+  --map-idle: #a3a9b3;
+  --map-zone: #fbf5ec;
+  --map-boundary: #b49a72;
+  --map-boundary-label: #7a5a2a;
+  --resource-tint: #fff8ef;
+
+  /* Status chips. */
+  --status-supported-bg: #ddf1ea;
+  --status-supported-fg: #0b6b53;
+  --status-partial-bg: #fbebd9;
+  --status-partial-fg: #8a4b06;
+  --status-planned-bg: #e7e8eb;
+  --status-planned-fg: #474c59;
+  --status-unverified-border: #9aa0aa;
+
+  /* Dark band (demo section). */
+  --band: #13171d;
+  --band-card: #1b2027;
+  --band-inset: #232a33;
+  --band-border: #39404b;
+  --band-text: #f4f5f1;
+  --band-soft: #c9cdd3;
+  --band-faint: #9aa3ae;
+  --band-person: #7fd4b6;
+  --band-agent: #a9b6ff;
+  --band-resource: #f2b872;
+
+  --radius-sm: 6px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --container: 1200px;
+}

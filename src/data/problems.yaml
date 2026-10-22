@@ -1,0 +1,38 @@
+# The six failures from docs/context/concept.md, section 2.
+# The patterns that answer each one are derived from pattern frontmatter.
+
+no-identity:
+  order: 1
+  title: It has no identity of its own
+  happens: Its actions show up as a user or a shared service account, so no one can tell the agent acted.
+  fourAs: [Administer]
+
+copied-secret:
+  order: 2
+  title: It holds a copied secret
+  happens: A borrowed password or a shared API key. Whoever holds it becomes the agent.
+  fourAs: [Authenticate]
+
+nothing-limits:
+  order: 3
+  title: Nothing limits what it may do
+  happens: Access is all or nothing, not the permissions this task needs.
+  fourAs: [Authorize]
+
+no-trace:
+  order: 4
+  title: Delegation leaves no trace
+  happens: The token cannot show that the agent acted for a user, or for which user.
+  fourAs: [Authorize, Audit]
+
+no-approver:
+  order: 5
+  title: No one is there to approve
+  happens: Background work has no way to ask the right person before it acts.
+  fourAs: [Authorize]
+
+anyone-can-call:
+  order: 6
+  title: Anyone can call the agent
+  happens: The agent is an endpoint too, and it needs its own access control.
+  fourAs: [Authorize]

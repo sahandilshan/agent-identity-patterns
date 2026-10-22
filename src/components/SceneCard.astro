@@ -1,0 +1,68 @@
+---
+import { getEntry, type CollectionEntry } from 'astro:content';
+import { href } from '../lib/url';
+import TokenClaims from './TokenClaims.astro';
+
+interface Props {
+  scene: CollectionEntry<'scenes'>;
+}
+const { scene } = Astro.props;
+const pattern = await getEntry(scene.data.pattern);
+if (!pattern) throw new Error(`SceneCard: scene "${scene.id}" references a missing pattern`);
+---
+
+<a class="card" href={href('demo/')}>
+  <span class="still">
+    <TokenClaims tokens={scene.data.preview} tone="band" />
+    {scene.data.note && <span class="note">{scene.data.note}</span>}
+  </span>
+  <span class="eyebrow">Scene {scene.data.order}</span>
+  <span class="title">{scene.data.title}</span>
+  <span class="pattern">{pattern.data.title}</span>
+</a>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--band-text);
+    border: 1px solid var(--band-border);
+    border-radius: 14px;
+    padding: 14px;
+    background: var(--band-card);
+  }
+  .card:hover {
+    color: var(--band-text);
+    border-color: var(--band-faint);
+  }
+  .still {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 4px;
+    height: 128px;
+    border-radius: 10px;
+    background: var(--band-inset);
+    padding: 12px;
+  }
+  .note {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--band-soft);
+  }
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--band-faint);
+  }
+  .title {
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .pattern {
+    font-size: 14px;
+    color: var(--band-soft);
+  }
+</style>

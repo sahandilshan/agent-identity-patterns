@@ -1,0 +1,54 @@
+---
+import { sortedPatterns } from '../lib/data';
+import { GROUPS, GROUP_LABELS } from '../schemas/patterns';
+import PatternCard from './PatternCard.astro';
+
+/** All patterns in their stack-map groups. Used by the home page and the patterns index. */
+const patterns = await sortedPatterns();
+const groups = GROUPS.map((g) => ({ label: GROUP_LABELS[g], patterns: patterns.filter((p) => p.data.group === g) })).filter(
+  (g) => g.patterns.length > 0,
+);
+---
+
+<div class="grid">
+  {
+    groups.map((g) => (
+      <section class="group" aria-label={g.label}>
+        <p class="eyebrow">{g.label}</p>
+        <ul role="list">
+          {g.patterns.map((p) => (
+            <li>
+              <PatternCard pattern={p} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
+    gap: 32px 24px;
+  }
+  .group {
+    border-top: 2px solid var(--ink);
+    padding-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .group .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+</style>

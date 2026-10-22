@@ -1,0 +1,22 @@
+---
+import { assertNotForLaunch } from '../../lib/launch';
+
+/** A template section whose content arrives in a later PR. A launch build fails on it. */
+interface Props {
+  section: string;
+}
+assertNotForLaunch(`the "${Astro.props.section}" placeholder on ${Astro.url.pathname}`);
+---
+
+<p class="pending"><slot /></p>
+
+<style>
+  .pending {
+    font-size: 15px;
+    color: var(--muted-strong);
+    padding: 14px 16px;
+    border: 1px dashed var(--status-unverified-border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+</style>

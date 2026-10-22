@@ -1,0 +1,55 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { href } from '../lib/url';
+import StatusChip from './StatusChip.astro';
+
+interface Props {
+  pattern: CollectionEntry<'patterns'>;
+}
+const { pattern } = Astro.props;
+---
+
+<a class:list={['card', { emphasis: pattern.data.group === 'tools' }]} href={href(`patterns/${pattern.id}/`)}>
+  <span class="top">
+    <span class="title">{pattern.data.title}</span>
+    <StatusChip id={pattern.data.status.id} />
+  </span>
+  <span class="summary">{pattern.data.summary}</span>
+</a>
+
+<style>
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--ink);
+    padding: 14px 16px;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .card:hover {
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+  .card.emphasis {
+    border: 2px solid var(--kind-resource);
+    background: var(--resource-tint);
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .title {
+    font-weight: 600;
+    font-size: 17px;
+  }
+  .summary {
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+</style>

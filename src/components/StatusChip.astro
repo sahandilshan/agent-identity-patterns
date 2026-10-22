@@ -1,0 +1,64 @@
+---
+import { getEntry } from 'astro:content';
+
+/**
+ * A status chip takes a status ID, never a label, so a page can only show what
+ * src/data/thunderid-status.yaml records. Unverified shows as "To verify".
+ */
+interface Props {
+  id: string;
+  /** Also show the one-line qualifier. */
+  qualifier?: boolean;
+}
+const { id, qualifier = false } = Astro.props;
+const entry = await getEntry('status', id);
+if (!entry) throw new Error(`StatusChip: unknown status "${id}"`);
+const { label } = entry.data;
+const text = label === 'Unverified' ? 'To verify' : label;
+---
+
+<span class="status">
+  <span class:list={['chip', `chip-${label.toLowerCase()}`]}>{text}</span>
+  {qualifier && entry.data.qualifier && <span class="qualifier">{entry.data.qualifier}</span>}
+</span>
+
+<style>
+  .status {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 10px;
+  }
+  .chip {
+    flex: none;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.5;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .chip-supported {
+    background: var(--status-supported-bg);
+    color: var(--status-supported-fg);
+  }
+  .chip-partial {
+    background: var(--status-partial-bg);
+    color: var(--status-partial-fg);
+  }
+  .chip-planned {
+    background: var(--status-planned-bg);
+    color: var(--status-planned-fg);
+  }
+  .chip-unverified {
+    background: var(--surface);
+    color: var(--muted-strong);
+    border: 1px dashed var(--status-unverified-border);
+  }
+  .qualifier {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--muted-strong);
+  }
+</style>

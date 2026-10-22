@@ -1,0 +1,28 @@
+---
+import { getEntry } from 'astro:content';
+
+interface Props {
+  id: string;
+}
+const entry = await getEntry('standards', Astro.props.id);
+if (!entry) throw new Error(`StandardChip: unknown standard "${Astro.props.id}"`);
+---
+
+<a class="standard" href={entry.data.url}>{entry.data.name}</a>
+
+<style>
+  .standard {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 2px 8px;
+    border: 1px solid var(--control-border);
+    border-radius: var(--radius-sm);
+    color: var(--ink-soft);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .standard:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+</style>

@@ -1,0 +1,218 @@
+---
+import PatternGrid from '../components/PatternGrid.astro';
+import ProblemCard from '../components/ProblemCard.astro';
+import SceneCard from '../components/SceneCard.astro';
+import StackMap from '../components/StackMap.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { sortedProblems, sortedScenes, statusStamp } from '../lib/data';
+import { href } from '../lib/url';
+
+const problems = await sortedProblems();
+const scenes = await sortedScenes();
+const stamp = await statusStamp();
+
+const legend = [
+  { label: 'Person', color: 'var(--kind-person)' },
+  { label: 'Application', color: 'var(--kind-application)' },
+  { label: 'Agent', color: 'var(--kind-agent)' },
+  { label: 'Resource', color: 'var(--kind-resource)' },
+  { label: 'Identity provider', color: 'var(--kind-idp)' },
+];
+---
+
+<BaseLayout description="How to build agents with proper identity and authorization: each problem maps to a pattern on open standards, and each pattern runs in a real demo, with ThunderID as the implementation.">
+  <section class="container hero">
+    <p class="eyebrow hero-eyebrow">Agent identity and authorization, pattern by pattern</p>
+    <h1>Agents are not users. They are not service accounts either.</h1>
+    <p class="lead">
+      An agent is called by people, apps and other agents, and it calls models, MCP servers, APIs and other agents in turn. Every
+      one of those arrows needs authentication, authorization and audit. Each problem here maps to a pattern built on open
+      standards, with ThunderID as the implementation, and a demo app, Wayfinder, replays recorded runs of the core flows.
+    </p>
+    <div class="actions">
+      <a class="btn btn-primary" href="#map">I'm building an agent</a>
+      <a class="btn btn-outline" href="#problems">I'm governing agents</a>
+    </div>
+    <p class="mono standards">
+      OAuth 2.0 · RFC 8693 token exchange · OpenID CIBA · RFC 8707 · RFC 9728 · ID-JAG (IETF draft)
+    </p>
+  </section>
+
+  <section id="map" class="container map-section" aria-labelledby="map-title">
+    <div class="map-head">
+      <div class="section-head">
+        <h2 id="map-title">Every arrow is a decision</h2>
+        <p>Pick an arrow to see what goes wrong without a pattern, and which pattern secures it.</p>
+      </div>
+      <ul class="legend" role="list" aria-label="Legend">
+        {
+          legend.map((l) => (
+            <li>
+              <span class="dot" style={`background:${l.color}`} />
+              {l.label}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <StackMap variant="full" />
+  </section>
+
+  <section id="problems" class="band-light" aria-labelledby="problems-title">
+    <div class="container stack">
+      <div class="section-head">
+        <h2 id="problems-title">What goes wrong when an agent borrows an identity</h2>
+        <p>
+          Six failures agent builders run into. Each maps to one of the Four A's: Administer, Authenticate, Authorize and
+          Audit.
+        </p>
+      </div>
+      <div class="problems">{problems.map((p) => <ProblemCard problem={p} />)}</div>
+    </div>
+  </section>
+
+  <section id="patterns" class="container stack" aria-labelledby="patterns-title">
+    <div class="patterns-head">
+      <div class="section-head">
+        <h2 id="patterns-title">The patterns, in the order of the map</h2>
+        <p>
+          Every pattern page has the same shape: the failure, the flow, the token, a recorded run, the code, and how it goes
+          wrong.
+        </p>
+      </div>
+      <p class="mono stamp">{stamp}</p>
+    </div>
+    <PatternGrid />
+  </section>
+
+  <section id="demo" class="band-dark" aria-labelledby="demo-title">
+    <div class="container stack">
+      <div class="section-head">
+        <h2 id="demo-title">See it run: Wayfinder</h2>
+        <p>A travel app with a chat Concierge. Each scene replays a recorded run, with the token decoded at every step.</p>
+      </div>
+      <div class="scenes">{scenes.map((s) => <SceneCard scene={s} />)}</div>
+      <div class="actions">
+        <a class="btn btn-light" href={href('demo/')}>Open the scene player</a>
+        <a class="btn btn-outline-light" href={href('demo/')}>Run it yourself</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: 72px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .hero-eyebrow {
+    font-size: 13px;
+  }
+  h1 {
+    font-size: clamp(38px, 5.4vw, 68px);
+    line-height: 1.03;
+    letter-spacing: -0.03em;
+    font-weight: 700;
+    max-width: 18ch;
+  }
+  .lead {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 64ch;
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .standards {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .map-section {
+    padding-block: 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .map-head,
+  .patterns-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 16px 32px;
+  }
+  .legend {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .stack {
+    padding-block: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .band-light {
+    background: var(--surface);
+    border-block: 1px solid var(--rule);
+  }
+  .problems {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+    gap: 16px;
+  }
+  .stamp {
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 8px 12px;
+    border: 1px dashed var(--status-unverified-border);
+    border-radius: 8px;
+    color: var(--muted-strong);
+  }
+  .band-dark {
+    background: var(--band);
+    color: var(--band-text);
+  }
+  .band-dark .section-head p {
+    color: var(--band-soft);
+  }
+  .scenes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+    gap: 16px;
+  }
+  .btn-light {
+    background: var(--band-text);
+    border-color: var(--band-text);
+    color: var(--ink);
+  }
+  .btn-light:hover {
+    color: var(--ink);
+    background: #fff;
+  }
+  .btn-outline-light {
+    color: var(--band-text);
+  }
+  .btn-outline-light:hover {
+    color: #fff;
+  }
+</style>

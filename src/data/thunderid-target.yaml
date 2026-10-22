@@ -1,0 +1,12 @@
+# The ThunderID release every verified status claim is checked against.
+# Both values stay null until a target is chosen (open question in
+# docs/context/decisions.md). While they are null, every status stays
+# Unverified and the launch gate fails.
+#
+# Changing the target makes every verified claim fail the build until it is
+# re-verified against the new commit, in one reviewable change.
+#
+# .github/workflows/thunderid-release-check.yml reads the release line.
+current:
+  release: null
+  commit: null

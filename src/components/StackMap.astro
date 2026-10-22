@@ -1,0 +1,482 @@
+---
+import { ARROW_IDS, DEFAULT_ARROW, SIDES, SIDE_LABELS, type ArrowId } from '../schemas/map';
+import { arrowView, sortedArrows } from '../lib/data';
+import ArrowPanel from './ArrowPanel.astro';
+import Glyph from './Glyph.astro';
+
+/**
+ * The stack map from the approved mock. Geometry (px on a 1152 x 712 board)
+ * lives here; what each arrow means comes from src/data/stack-map.yaml.
+ *
+ * full: home page. Each arrow's button links to #arrow-<id>; the targets are
+ *   empty anchors at the top of the map, and CSS :target with :has() shows that
+ *   arrow's panel and highlights it, with no JavaScript. The optional script
+ *   only moves focus and sets aria-current; it never rewrites the URL, because
+ *   pushState does not update :target.
+ * mini: pattern pages. A scaled, decorative copy with `highlight` arrows lit.
+ */
+interface Props {
+  variant: 'full' | 'mini';
+  highlight?: ArrowId[];
+}
+const { variant, highlight = [] } = Astro.props;
+const full = variant === 'full';
+
+const arrows = await sortedArrows();
+const byId = new Map(arrows.map((a) => [a.id, a]));
+const views = full ? await Promise.all(arrows.map((a) => arrowView(a))) : [];
+const OUTBOUND: ArrowId[] = ['llm', 'mcp', 'sub', 'saas', 'domain'];
+
+interface Seg {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  arrows: ArrowId[];
+  head?: boolean;
+}
+const HEAD = 7; // marker length; a line with a head stops this far before its tip
+const segs: Seg[] = [
+  { x1: 232, y1: 168, x2: 296, y2: 168, arrows: ['inbound'] },
+  { x1: 232, y1: 280, x2: 296, y2: 280, arrows: ['inbound'] },
+  { x1: 232, y1: 392, x2: 296, y2: 392, arrows: ['inbound'] },
+  { x1: 296, y1: 168, x2: 296, y2: 392, arrows: ['inbound'] },
+  { x1: 296, y1: 280, x2: 487 - HEAD, y2: 280, arrows: ['inbound'], head: true },
+  { x1: 664, y1: 280, x2: 728, y2: 280, arrows: OUTBOUND },
+  { x1: 728, y1: 104, x2: 728, y2: 200, arrows: ['llm'] },
+  { x1: 728, y1: 200, x2: 728, y2: 280, arrows: ['llm', 'mcp'] },
+  { x1: 728, y1: 280, x2: 728, y2: 296, arrows: ['sub', 'saas', 'domain'] },
+  { x1: 728, y1: 296, x2: 728, y2: 440, arrows: ['saas', 'domain'] },
+  { x1: 728, y1: 440, x2: 728, y2: 536, arrows: ['domain'] },
+  { x1: 728, y1: 104, x2: 919 - HEAD, y2: 104, arrows: ['llm'], head: true },
+  { x1: 728, y1: 200, x2: 919 - HEAD, y2: 200, arrows: ['mcp'], head: true },
+  { x1: 728, y1: 296, x2: 919 - HEAD, y2: 296, arrows: ['sub'], head: true },
+  { x1: 728, y1: 440, x2: 919 - HEAD, y2: 440, arrows: ['saas'], head: true },
+  { x1: 728, y1: 536, x2: 919 - HEAD, y2: 536, arrows: ['domain'], head: true },
+];
+
+type Icon = 'person' | 'application' | 'agent' | 'llm' | 'server' | 'cloud' | 'globe';
+interface Node {
+  left: number;
+  top: number;
+  height: number;
+  icon: Icon;
+  color: string;
+  title: string;
+  sub: string;
+  emphasis?: boolean;
+}
+const nodes: Node[] = [
+  { left: 32, top: 136, height: 64, icon: 'person', color: 'var(--kind-person)', title: 'Users', sub: 'people in your app' },
+  { left: 32, top: 248, height: 64, icon: 'application', color: 'var(--kind-application)', title: 'Applications', sub: 'the app they use' },
+  { left: 32, top: 360, height: 64, icon: 'agent', color: 'var(--kind-agent)', title: 'Other agents', sub: 'calling agents' },
+  { left: 920, top: 72, height: 64, icon: 'llm', color: 'var(--kind-resource)', title: 'LLM providers', sub: 'model APIs' },
+  { left: 920, top: 160, height: 80, icon: 'server', color: 'var(--kind-resource)', title: 'MCP servers and APIs', sub: 'your tools and data', emphasis: true },
+  { left: 920, top: 264, height: 64, icon: 'agent', color: 'var(--kind-agent)', title: 'Sub-agents', sub: 'worker agents' },
+  { left: 920, top: 408, height: 64, icon: 'cloud', color: 'var(--kind-resource)', title: 'External SaaS', sub: 'third-party apps' },
+  { left: 920, top: 504, height: 64, icon: 'globe', color: 'var(--kind-resource)', title: 'Another domain', sub: "a partner's APIs" },
+];
+
+const pills: { id: Exclude<ArrowId, 'agent'>; left: number; top: number }[] = [
+  { id: 'inbound', left: 322, top: 258 },
+  { id: 'llm', left: 754, top: 82 },
+  { id: 'mcp', left: 754, top: 178 },
+  { id: 'sub', left: 754, top: 274 },
+  { id: 'saas', left: 754, top: 418 },
+  { id: 'domain', left: 754, top: 514 },
+];
+
+const lit = (ids: ArrowId[]) => !full && ids.some((id) => highlight.includes(id));
+const arrowData = (id: ArrowId) => {
+  const a = byId.get(id);
+  if (!a) throw new Error(`StackMap: stack-map.yaml has no arrow "${id}"`);
+  return a.data;
+};
+
+// One rule set per arrow, plus the default arrow when nothing is targeted.
+const rules = (scope: string, id: string) => `
+${scope} .seg[data-arrows~="${id}"] { stroke: var(--accent); }
+${scope} .seg.head[data-arrows~="${id}"] { marker-end: url(#aip-head-on); }
+${scope} :is(.pill, .list-link)[data-arrow="${id}"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+${scope} .agent-node[data-arrow="${id}"] { border-color: var(--accent); box-shadow: 0 0 0 6px var(--accent-tint); }
+${scope} .panel[data-arrow="${id}"] { display: flex; }`;
+const css = full
+  ? ARROW_IDS.map((id) => rules(`.stack-map:has(#arrow-${id}:target)`, id)).join('') +
+    rules('.stack-map:not(:has(.map-target:target))', DEFAULT_ARROW)
+  : '';
+---
+
+<div class:list={['stack-map', `variant-${variant}`]} data-stack-map={full ? '' : undefined} data-default={DEFAULT_ARROW}>
+  {full && <style is:inline set:html={css} />}
+  {full && ARROW_IDS.map((id) => <span id={`arrow-${id}`} class="map-target" />)}
+
+  <div class="map-scroll" aria-hidden={full ? undefined : 'true'}>
+    <div class="map" role={full ? 'group' : undefined} aria-label={full ? 'Stack map' : undefined}>
+      <div class="zone"></div>
+      <svg class="lines" width="1152" height="712" viewBox="0 0 1152 712" aria-hidden="true">
+        <defs>
+          <marker id={full ? 'aip-head' : 'aip-mini-head'} markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="0" refY="3.5" orient="auto">
+            <path d="M0 0 L7 3.5 L0 7 Z" fill="var(--map-idle)" />
+          </marker>
+          <marker id={full ? 'aip-head-on' : 'aip-mini-head-on'} markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" refX="0" refY="3.5" orient="auto">
+            <path d="M0 0 L7 3.5 L0 7 Z" fill="var(--accent)" />
+          </marker>
+        </defs>
+        <line class="boundary" x1="696" y1="376" x2="1136" y2="376" />
+        {
+          segs.map((s) => (
+            <line
+              class:list={['seg', { head: s.head, 'is-on': lit(s.arrows) }]}
+              data-arrows={s.arrows.join(' ')}
+              x1={s.x1}
+              y1={s.y1}
+              x2={s.x2}
+              y2={s.y2}
+              marker-end={s.head ? `url(#${full ? 'aip-head' : lit(s.arrows) ? 'aip-mini-head-on' : 'aip-mini-head'})` : undefined}
+            />
+          ))
+        }
+      </svg>
+
+      {
+        nodes.map((n) => (
+          <div class:list={['node', { emphasis: n.emphasis }]} style={`left:${n.left}px;top:${n.top}px;height:${n.height}px`}>
+            <Glyph icon={n.icon} color={n.color} />
+            <span>
+              <b>{n.title}</b>
+              <br />
+              <span class="node-sub">{n.sub}</span>
+            </span>
+          </div>
+        ))
+      }
+
+      {
+        full ? (
+          <a class="agent-node" data-arrow="agent" href="#arrow-agent">
+            <Glyph icon="agent" color="var(--accent)" size={34} strokeWidth={1.6} />
+            <span>
+              <b>The agent</b>
+              <br />
+              <span class="node-sub">its own identity</span>
+              <span class="visually-hidden">: {arrowData('agent').question}</span>
+            </span>
+          </a>
+        ) : (
+          <div class:list={['agent-node', { 'is-on': lit(['agent']) }]}>
+            <Glyph icon="agent" color="var(--accent)" size={34} strokeWidth={1.6} />
+            <span>
+              <b>The agent</b>
+              <br />
+              <span class="node-sub">its own identity</span>
+            </span>
+          </div>
+        )
+      }
+
+      <div class="idp">
+        <Glyph icon="key" color="var(--band-text)" />
+        <span><b>Identity provider.</b> Issues and validates every token on this map. Here, that is ThunderID.</span>
+      </div>
+
+      <p class="label" style="left:32px;top:104px">{SIDE_LABELS.inbound}</p>
+      <p class="label" style="left:920px;top:40px">{SIDE_LABELS.outbound}</p>
+      <p class="label boundary-label" style="left:920px;top:348px">Trust boundary</p>
+      <p class="label boundary-label" style="left:744px;top:568px">Outside your domain</p>
+
+      {
+        pills.map((p) =>
+          full ? (
+            <a class="pill" data-arrow={p.id} href={`#arrow-${p.id}`} style={`left:${p.left}px;top:${p.top}px`}>
+              {arrowData(p.id).ask}
+              <span class="visually-hidden">: {arrowData(p.id).eyebrow}</span>
+            </a>
+          ) : (
+            <span class:list={['pill', { 'is-on': lit([p.id]) }]} style={`left:${p.left}px;top:${p.top}px`}>
+              {arrowData(p.id).ask}
+            </span>
+          ),
+        )
+      }
+    </div>
+  </div>
+
+  {
+    full && (
+      <nav class="map-list" aria-label="Stack map arrows">
+        {SIDES.map((side) => (
+          <div class="list-group">
+            <p class="eyebrow">{SIDE_LABELS[side]}</p>
+            <ul role="list">
+              {arrows
+                .filter((a) => a.data.side === side)
+                .map((a) => (
+                  <li>
+                    <a class="list-link" data-arrow={a.id} href={`#arrow-${a.id}`}>
+                      <span class="list-label">{a.data.label}</span>
+                      <span class="list-ask">{a.data.ask}</span>
+                    </a>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))}
+      </nav>
+    )
+  }
+
+  {full && views.map((v) => <ArrowPanel arrow={v.arrow} options={v.options} covers={v.covers} />)}
+</div>
+
+{
+  full && (
+    <script>
+      // Progressive enhancement only: the panels work without this.
+      const map = document.querySelector<HTMLElement>('[data-stack-map]');
+      if (map) {
+        const update = (moveFocus: boolean) => {
+          const id = location.hash.startsWith('#arrow-') ? location.hash.slice('#arrow-'.length) : map.dataset['default'];
+          for (const link of map.querySelectorAll<HTMLElement>('a[data-arrow]')) {
+            if (link.dataset['arrow'] === id) link.setAttribute('aria-current', 'true');
+            else link.removeAttribute('aria-current');
+          }
+          const panel = moveFocus && id ? map.querySelector<HTMLElement>(`.panel[data-arrow="${CSS.escape(id)}"]`) : null;
+          if (panel) {
+            // On narrow screens the panel sits below the list, so bring it to the top.
+            const list = map.querySelector<HTMLElement>('.map-list');
+            if (list && getComputedStyle(list).display !== 'none') panel.scrollIntoView({ block: 'start' });
+            panel.querySelector<HTMLElement>('h3')?.focus({ preventScroll: true });
+          }
+        };
+        update(false);
+        window.addEventListener('hashchange', () => update(true));
+      }
+    </script>
+  )
+}
+
+<style>
+  .stack-map {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  /* Out of flow, so the targets add no flex gap above the map. */
+  .map-target {
+    position: absolute;
+    top: 0;
+    scroll-margin-top: 16px;
+  }
+  .map-scroll {
+    overflow-x: auto;
+    border-radius: var(--radius-lg);
+  }
+  .map {
+    position: relative;
+    width: 1152px;
+    height: 712px;
+    background-color: var(--surface);
+    background-image: radial-gradient(var(--map-dot) 1px, transparent 1px);
+    background-size: 16px 16px;
+    box-shadow: inset 0 0 0 1px var(--rule);
+    border-radius: var(--radius-lg);
+  }
+  .zone {
+    position: absolute;
+    left: 696px;
+    top: 376px;
+    width: 440px;
+    height: 216px;
+    background: var(--map-zone);
+  }
+  .lines {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+  }
+  .boundary {
+    stroke: var(--map-boundary);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 6;
+  }
+  .seg {
+    stroke: var(--map-idle);
+    stroke-width: 2;
+    stroke-linecap: round;
+    fill: none;
+  }
+  .seg.is-on {
+    stroke: var(--accent);
+  }
+  .node {
+    position: absolute;
+    width: 200px;
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--rule-strong);
+    border-radius: var(--radius);
+    font-size: 15px;
+    line-height: 18px;
+  }
+  .node.emphasis {
+    background: var(--resource-tint);
+    border: 2px solid var(--kind-resource);
+  }
+  .node-sub {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .agent-node {
+    position: absolute;
+    left: 488px;
+    top: 216px;
+    width: 176px;
+    height: 128px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 2px solid var(--ink);
+    border-radius: var(--radius-lg);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 20px;
+    text-align: center;
+    text-decoration: none;
+  }
+  .agent-node .node-sub {
+    font-size: 13px;
+  }
+  a.agent-node:hover {
+    color: var(--ink);
+    border-color: var(--accent);
+  }
+  .agent-node.is-on {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 6px var(--accent-tint);
+  }
+  .idp {
+    position: absolute;
+    left: 32px;
+    top: 616px;
+    width: 1088px;
+    height: 64px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--band);
+    color: var(--band-text);
+    border-radius: var(--radius);
+    font-size: 15px;
+    line-height: 20px;
+  }
+  .label {
+    position: absolute;
+    width: 200px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .boundary-label {
+    color: var(--map-boundary-label);
+  }
+  .pill {
+    position: absolute;
+    width: 140px;
+    height: 44px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1.5px solid var(--control-border);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  a.pill:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  .pill.is-on {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .map-list {
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .list-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .list-group .eyebrow {
+    font-size: 11px;
+  }
+  .list-group ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .list-link {
+    min-height: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--control-border);
+    background: var(--surface);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .list-label {
+    font-weight: 600;
+    font-size: 15px;
+  }
+  .list-ask {
+    font-size: 13px;
+  }
+
+  @media (max-width: 959px) {
+    .variant-full .map-scroll {
+      display: none;
+    }
+    .variant-full .map-list {
+      display: flex;
+    }
+  }
+
+  .variant-mini .map-scroll {
+    overflow: hidden;
+  }
+  .variant-mini .map {
+    zoom: 0.5;
+  }
+  @media (max-width: 639px) {
+    .variant-mini .map {
+      zoom: 0.28;
+    }
+  }
+</style>

@@ -1,0 +1,13 @@
+---
+import StatusChip from './StatusChip.astro';
+
+/**
+ * Marks a ThunderID capability statement in prose, so it renders with the
+ * status it depends on: `<Claim status="ciba-approval">ThunderID polls…</Claim>`.
+ */
+interface Props {
+  status: string;
+}
+---
+
+<span class="claim"><slot /> <StatusChip id={Astro.props.status} /></span>

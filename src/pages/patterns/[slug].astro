@@ -1,0 +1,25 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Claim from '../../components/Claim.astro';
+import * as template from '../../components/template';
+import PatternLayout from '../../layouts/PatternLayout.astro';
+
+export async function getStaticPaths() {
+  const patterns = await getCollection('patterns');
+  return patterns.map((pattern) => ({ params: { slug: pattern.id }, props: { pattern } }));
+}
+
+interface Props {
+  pattern: CollectionEntry<'patterns'>;
+}
+const { pattern } = Astro.props;
+
+// Template components that need the entry (SeeItRun, and later Flow and Token) read it here.
+Astro.locals.pattern = pattern;
+const { Content } = await render(pattern);
+const written = (pattern.body ?? '').trim() !== '';
+---
+
+<PatternLayout pattern={pattern} written={written}>
+  <Content components={{ ...template, Claim }} />
+</PatternLayout>

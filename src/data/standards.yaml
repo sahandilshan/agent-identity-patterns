@@ -1,0 +1,44 @@
+rfc6749:
+  name: OAuth 2.0 (RFC 6749)
+  kind: RFC
+  url: https://www.rfc-editor.org/rfc/rfc6749
+
+rfc7636:
+  name: PKCE (RFC 7636)
+  kind: RFC
+  url: https://www.rfc-editor.org/rfc/rfc7636
+
+rfc7523:
+  name: JWT Bearer (RFC 7523)
+  kind: RFC
+  url: https://www.rfc-editor.org/rfc/rfc7523
+
+rfc8693:
+  name: Token Exchange (RFC 8693)
+  kind: RFC
+  url: https://www.rfc-editor.org/rfc/rfc8693
+
+rfc8707:
+  name: Resource Indicators (RFC 8707)
+  kind: RFC
+  url: https://www.rfc-editor.org/rfc/rfc8707
+
+rfc9728:
+  name: Protected Resource Metadata (RFC 9728)
+  kind: RFC
+  url: https://www.rfc-editor.org/rfc/rfc9728
+
+openid-ciba:
+  name: OpenID CIBA Core 1.0
+  kind: OpenID
+  url: https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html
+
+id-jag:
+  name: Identity Assertion Authorization Grant (IETF draft)
+  kind: IETF draft
+  url: https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/
+
+mcp-authorization:
+  name: MCP Authorization
+  kind: Other
+  url: https://modelcontextprotocol.io/specification/latest/basic/authorization

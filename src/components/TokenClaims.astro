@@ -1,0 +1,74 @@
+---
+import type { TokenChip } from '../schemas/common';
+
+/** Static claim chips, coloured by the kind of identity the value names. */
+interface Props {
+  tokens: TokenChip[];
+  /** `band` for the dark demo section. */
+  tone?: 'light' | 'band';
+}
+const { tokens, tone = 'light' } = Astro.props;
+---
+
+<span class:list={['claims', `tone-${tone}`]}>
+  {
+    tokens.map((t) => (
+      <span class="claim">
+        {t.claim} <span class:list={['value', `kind-${t.kind}`]}>{t.value}</span>
+      </span>
+    ))
+  }
+</span>
+
+<style>
+  .claims {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .claim {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+  }
+  .value {
+    font-weight: 600;
+  }
+  .tone-light .claim {
+    background: var(--chip-ground);
+    color: var(--muted);
+  }
+  .tone-light .kind-person {
+    color: var(--kind-person);
+  }
+  .tone-light .kind-agent {
+    color: var(--kind-agent);
+  }
+  .tone-light .kind-resource {
+    color: var(--kind-resource);
+  }
+  .tone-light .kind-plain {
+    color: var(--ink);
+  }
+  .tone-band {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tone-band .claim {
+    padding: 0;
+    color: var(--band-soft);
+  }
+  .tone-band .value {
+    font-weight: 400;
+  }
+  .tone-band .kind-person {
+    color: var(--band-person);
+  }
+  .tone-band .kind-agent {
+    color: var(--band-agent);
+  }
+  .tone-band .kind-resource {
+    color: var(--band-resource);
+  }
+</style>

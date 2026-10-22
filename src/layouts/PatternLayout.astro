@@ -1,0 +1,120 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import StackMap from '../components/StackMap.astro';
+import StandardChip from '../components/StandardChip.astro';
+import StatusChip from '../components/StatusChip.astro';
+import { arrowsFor } from '../lib/data';
+import { href } from '../lib/url';
+import { GROUP_LABELS } from '../schemas/patterns';
+import type { ArrowId } from '../schemas/map';
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  pattern: CollectionEntry<'patterns'>;
+  /** False while the page has no body yet. */
+  written: boolean;
+}
+const { pattern, written } = Astro.props;
+const { data } = pattern;
+const arrows = await arrowsFor(pattern.id);
+const highlight = arrows.map((a) => a.id as ArrowId);
+---
+
+<BaseLayout title={data.title} description={data.summary} draft={data.draft}>
+  <article class="container page">
+    <header class="head">
+      <div class="intro">
+        <p class="eyebrow">{GROUP_LABELS[data.group]}</p>
+        <h1>{data.title}</h1>
+        <p class="summary">{data.summary}</p>
+        <StatusChip id={data.status.id} qualifier />
+        <div class="chips">
+          {data.standards.map((s) => <StandardChip id={s.id} />)}
+        </div>
+        <div class="chips">
+          {data.fourAs.map((a) => <span class="chip-a">{a}</span>)}
+        </div>
+      </div>
+      <aside class="where" aria-label="Where this pattern sits">
+        <StackMap variant="mini" highlight={highlight} />
+        <p class="sits">
+          On the map:{' '}
+          {
+            arrows.map((a, i) => (
+              <>
+                {i > 0 && ', '}
+                <a href={`${href()}#arrow-${a.id}`}>{a.data.eyebrow}</a>
+              </>
+            ))
+          }
+        </p>
+      </aside>
+    </header>
+    {
+      written ? (
+        <div class="body">
+          <slot />
+        </div>
+      ) : (
+        <p class="unwritten">This pattern page is being written.</p>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .page {
+    padding-block: 56px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px 48px;
+    align-items: flex-start;
+  }
+  .intro {
+    flex: 1 1 420px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  h1 {
+    font-size: clamp(34px, 4.6vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+  }
+  .summary {
+    font-size: 19px;
+    color: var(--ink-soft);
+    max-width: 60ch;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .where {
+    flex: 0 1 576px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sits {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .unwritten {
+    font-size: 17px;
+    color: var(--muted-strong);
+    padding: 16px 18px;
+    border: 1px dashed var(--status-unverified-border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+</style>

@@ -1,0 +1,55 @@
+---
+title: Act on its own authority
+summary: Client credentials, for work that needs no user.
+group: outbound-own
+order: 1
+conceptId: 4
+status: own-authority
+standards: [rfc6749, rfc8707]
+fourAs: [Authenticate, Authorize]
+problem: copied-secret
+draft: true
+---
+
+{/* Template stub (PR 1): proves the section order and components. Content is finished in PR 3. */}
+
+<Failure>
+
+John asks the Concierge for flight deals. Nothing about deals belongs to John, so the Concierge calls the booking MCP server with a shared API key. The server cannot tell which agent called, and the key can do anything any holder of it can.
+
+</Failure>
+
+<UseWhen>
+
+**Use when** the task needs no user context: search, recommendations, scheduled work.
+
+**Not when** the action belongs to a user, such as a booking. Use just-in-time user delegation instead.
+
+</UseWhen>
+
+<Flow />
+
+<Token />
+
+<SeeItRun />
+
+<BuildIt>
+
+1. Register the agent with a credential of its own: a client secret, or better, a private key JWT.
+2. Request a token with the client credentials grant. Pass `resource` set to the server the agent will call, and ask only for the scopes this task needs.
+3. At the server, validate every token before acting: the signature against the issuer's keys, then `iss`, `aud` and `exp`, then the scope the tool needs.
+
+</BuildIt>
+
+<GetItWrong>
+
+- Checking only the scope. A token is trusted only after its signature, issuer, audience and expiry are checked.
+- Assuming every requested scope was granted. <Claim status="own-authority">ThunderID drops scopes outside the agent's roles instead of rejecting the request</Claim>, so read `scope` in the response.
+
+</GetItWrong>
+
+<ForArchitects>
+
+Covers Authenticate and Authorize. The token names the agent as its subject, so access logs show the agent, not a user or a shared account.
+
+</ForArchitects>

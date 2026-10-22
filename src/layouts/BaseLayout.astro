@@ -1,0 +1,68 @@
+---
+import '@fontsource-variable/instrument-sans';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/tokens.css';
+import '../styles/global.css';
+import SiteFooter from '../components/SiteFooter.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import { assertContent } from '../lib/assert-content';
+import { assertNotForLaunch } from '../lib/launch';
+import { SITE } from '../lib/site';
+import { href } from '../lib/url';
+
+interface Props {
+  /** Page title; omit on the home page. */
+  title?: string;
+  description: string;
+  /** Unfinished page. Not indexed, and a launch build fails on it. */
+  draft?: boolean;
+}
+const { title, description, draft = false } = Astro.props;
+
+// Every page uses this layout, so the content rules run on every build.
+await assertContent();
+if (draft) assertNotForLaunch(`draft page ${Astro.url.pathname}`);
+
+const fullTitle = title ? `${title} | ${SITE.name}` : SITE.name;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {draft && <meta name="robots" content="noindex" />}
+    <link rel="icon" type="image/svg+xml" href={href('favicon.svg')} />
+    <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <SiteHeader />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: 16px;
+    top: -48px;
+    padding: 8px 14px;
+    background: var(--ink);
+    color: #fff;
+    border-radius: var(--radius-sm);
+    z-index: 10;
+  }
+  .skip-link:focus {
+    top: 12px;
+    color: #fff;
+  }
+  main:focus {
+    outline: none;
+  }
+</style>

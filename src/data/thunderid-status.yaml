@@ -1,0 +1,47 @@
+# One entry per ThunderID capability claim the site makes.
+#
+# Supported, Partial and Planned need the target release, its full commit, the
+# date checked and code evidence (see src/schemas/status.ts). Every entry stays
+# Unverified until the target release is chosen and the claim is checked
+# against it. The qualifiers below come from code reading on ThunderID main
+# (8459a404, some rechecked at 6f774bb5), not from a release.
+
+register-agents:
+  label: Unverified
+  qualifier: No suspend state yet. Deleting an agent does not revoke tokens already issued.
+
+govern-callers:
+  label: Unverified
+  qualifier: Configured with a resource server today. A first-class link is planned.
+  tracking: thunder-id/thunderid#2456
+
+own-authority:
+  label: Unverified
+  qualifier: Scopes outside the agent's roles are dropped, not rejected.
+
+jit-delegation:
+  label: Unverified
+
+ciba-approval:
+  label: Unverified
+  qualifier: Poll mode only.
+
+multi-agent:
+  label: Unverified
+  qualifier: Token exchange drops the subject token's act, so earlier agents drop out of the chain.
+  tracking: thunder-id/thunderid#5662
+
+secure-mcp:
+  label: Unverified
+  qualifier: One resource server per token.
+
+id-jag:
+  label: Unverified
+  qualifier: The agent appears only as client_id, with no act claim.
+
+llm-keyless:
+  label: Unverified
+
+external-saas:
+  label: Unverified
+  qualifier: ThunderID does not store or broker third-party tokens yet.
