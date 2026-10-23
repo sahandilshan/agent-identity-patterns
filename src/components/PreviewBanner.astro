@@ -1,0 +1,26 @@
+---
+/**
+ * Shown on every page of a build that has not passed the launch gate. The text
+ * holds for any such build: it says what may be unfinished, not what is.
+ */
+---
+
+<div class="preview-banner" role="note">
+  <p class="container">
+    <b>Preview.</b> This site is not launched yet. Pages, ThunderID status checks and demo recordings may be unfinished; a
+    chip marked “To verify” has not been checked against a ThunderID release.
+  </p>
+</div>
+
+<style>
+  .preview-banner {
+    background: var(--status-partial-bg);
+    color: var(--status-partial-fg);
+    border-bottom: 1px solid var(--rule);
+  }
+  p {
+    padding-block: 10px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+</style>

@@ -1,6 +1,11 @@
 # Based on the workflow in Astro's GitHub Pages guide. Needs Settings > Pages >
-# Source: GitHub Actions. The build runs every CI gate with the launch gate on,
-# so nothing deploys while a claim is Unverified or a page is unfinished.
+# Source: GitHub Actions.
+#
+# Until the repository variable SITE_LAUNCHED is true, each deploy is a preview:
+# every CI gate runs, the launch gate does not, and every page carries the
+# preview banner and a noindex tag. Once SITE_LAUNCHED is true, the build runs
+# the launch gate, so nothing deploys while a claim is Unverified or a page is
+# unfinished.
 name: Deploy to GitHub Pages
 
 on:
@@ -17,10 +22,6 @@ concurrency:
 
 jobs:
   build:
-    # Pushes deploy only after launch, when the repository variable
-    # SITE_LAUNCHED is set to true; until then the launch gate would fail every
-    # push. A manual run always builds, so the gate can be tried at any time.
-    if: github.event_name == 'workflow_dispatch' || vars.SITE_LAUNCHED == 'true'
     runs-on: ubuntu-latest
     env:
       ASTRO_TELEMETRY_DISABLED: '1'
@@ -30,7 +31,7 @@ jobs:
           persist-credentials: false
       - uses: withastro/action@3eafd002e65cc31b4f0eae0bb05450d521562247 # v6.1.3
         with:
-          build-cmd: pnpm run ci:launch
+          build-cmd: ${{ vars.SITE_LAUNCHED == 'true' && 'pnpm run ci:launch' || 'pnpm run ci' }}
 
   deploy:
     needs: build

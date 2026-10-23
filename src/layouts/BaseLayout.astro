@@ -3,10 +3,11 @@ import '@fontsource-variable/instrument-sans';
 import '@fontsource-variable/jetbrains-mono';
 import '../styles/tokens.css';
 import '../styles/global.css';
+import PreviewBanner from '../components/PreviewBanner.astro';
 import SiteFooter from '../components/SiteFooter.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import { assertContent } from '../lib/assert-content';
-import { assertNotForLaunch } from '../lib/launch';
+import { assertNotForLaunch, PREVIEW } from '../lib/launch';
 import { SITE } from '../lib/site';
 import { href } from '../lib/url';
 
@@ -14,7 +15,7 @@ interface Props {
   /** Page title; omit on the home page. */
   title?: string;
   description: string;
-  /** Unfinished page. Not indexed, and a launch build fails on it. */
+  /** Unfinished page. A launch build fails on it, so it only ever ships in a (noindex) preview. */
   draft?: boolean;
 }
 const { title, description, draft = false } = Astro.props;
@@ -33,12 +34,13 @@ const fullTitle = title ? `${title} | ${SITE.name}` : SITE.name;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    {draft && <meta name="robots" content="noindex" />}
+    {PREVIEW && <meta name="robots" content="noindex" />}
     <link rel="icon" type="image/svg+xml" href={href('favicon.svg')} />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
+    {PREVIEW && <PreviewBanner />}
     <SiteHeader />
     <main id="main" tabindex="-1">
       <slot />

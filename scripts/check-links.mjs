@@ -1,6 +1,7 @@
 // Checks every internal link in the built site: it must sit under the base
 // path, resolve to a built file, and point at an id that exists. CSS url()
-// references (fonts) are checked the same way.
+// references (fonts) are checked the same way. It also checks indexing: a
+// preview build (LAUNCH unset) marks every page noindex, a launch build none.
 import { readdir, readFile } from 'node:fs/promises';
 import { extname, join, posix, relative, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -55,6 +56,23 @@ export function checkRef(ref, from, { base, files, ids }) {
   return [];
 }
 
+const NOINDEX = /<meta\s+name=(?:"robots"|'robots')\s+content=(?:"[^"]*\bnoindex\b[^"]*"|'[^']*\bnoindex\b[^']*')/i;
+
+/**
+ * Problems with indexing: every preview page must say noindex, and no launch page may.
+ * @param {Map<string, string>} pages HTML by path relative to dist
+ * @param {boolean} launch
+ */
+export function checkIndexing(pages, launch) {
+  const problems = [];
+  for (const [rel, html] of pages) {
+    const noindex = NOINDEX.test(html);
+    if (launch && noindex) problems.push(`${rel}: a launch build must not mark pages noindex`);
+    if (!launch && !noindex) problems.push(`${rel}: a preview build must mark every page noindex`);
+  }
+  return problems;
+}
+
 async function* walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
@@ -90,11 +108,19 @@ async function main() {
     }
   }
   if (files.size === 0) problems.push('dist/ is empty; run the build first');
+
+  // Same flag the build reads through astro:env; `pnpm run ci:launch` sets it for every step.
+  const launch = process.env.LAUNCH === 'true';
+  const pages = new Map([...contents].filter(([rel, text]) => rel.endsWith('.html') && text));
+  problems.push(...checkIndexing(pages, launch));
+
   if (problems.length > 0) {
-    console.error(`check-links: ${problems.length} broken internal link(s):\n${problems.join('\n')}`);
+    console.error(`check-links: ${problems.length} problem(s) in the built site:\n${problems.join('\n')}`);
     process.exit(1);
   }
-  console.log(`check-links: ${checked} references in ${ids.size} pages resolve`);
+  console.log(
+    `check-links: ${checked} references in ${ids.size} pages resolve; every page is ${launch ? 'indexable (launch)' : 'noindex (preview)'}`,
+  );
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) await main();

@@ -100,7 +100,7 @@ Each rule sits where it is actually enforced:
   - that the arrows in `stack-map.yaml` are exactly the arrows `StackMap` draws, and every pattern sits on at least one;
   - that no pattern has two scenes, and every recorded trace comes from the target commit;
   - that a pattern page without a body is a draft.
-- **The launch gate.** With `LAUNCH=true` (an `astro:env` boolean), the build also fails on any `Unverified` status, `draft` pattern or page (the stub pages are drafts), template placeholder (`Pending`), synthetic trace, scene without a recorded trace, unset target release, or missing footer author line. CI builds without it, so PR 1 is green while every claim is still `Unverified`. The deploy workflow builds with it, so nothing deploys until every claim is verified. Development builds show `Unverified` as the dashed "To verify" chip from the mock.
+- **The launch gate.** With `LAUNCH=true` (an `astro:env` boolean), the build also fails on any `Unverified` status, `draft` pattern or page (the stub pages are drafts), template placeholder (`Pending`), synthetic trace, scene without a recorded trace, unset target release, or missing footer author line. CI builds without it, so PR 1 is green while every claim is still `Unverified`. The deploy workflow builds with it once the repository variable `SITE_LAUNCHED` is `true`; before that it deploys marked previews (see Workflows). Development builds show `Unverified` as the dashed "To verify" chip from the mock.
 - **Text, in `scripts/check-text.mjs`.** A plain Node scan for em dashes and ` -- ` in published text under `src/content`, `src/data`, `src/pages`, `src/components`, `src/layouts`, `src/lib` and `src/schemas`, skipping code spans and code blocks.
 
 `reference()` comes from `astro:content`, which only exists inside Astro. The schemas in `src/schemas/` are therefore plain zod, and `content.config.ts` adds the `reference()` fields. Vitest tests the plain schemas, including failing cases such as a verified entry without a commit.
@@ -159,7 +159,7 @@ Status chips take a status ID, never a literal label. An inline `<Claim status="
 
 - `pnpm run ci` runs `astro check`, `check-text`, `vitest`, `astro build` (with `assertContent()` inside) and `check-links`, in that order.
 - `pnpm run ci:launch` runs the same with `LAUNCH=true`.
-- The link check confirms that every internal `href` and `src` in `dist/` resolves under the base path, and that `#arrow-*` anchors exist.
+- The link check confirms that every internal `href` and `src` in `dist/` resolves under the base path, and that `#arrow-*` anchors exist. It also checks indexing: in a preview build every page must carry `noindex`, and in a launch build none may.
 - An automated accessibility check (axe through Playwright) arrives in PR 2, when the player gives it keyboard behaviour worth testing. It also covers the map.
 
 ## Workflows
@@ -167,7 +167,10 @@ Status chips take a status ID, never a literal label. An inline `<Claim status="
 All three are written in the first PR and do nothing until the remote exists and Sahan enables Pages. Every action is pinned to a full commit SHA.
 
 - **`ci.yml`:** on pull requests and pushes, `pnpm install --frozen-lockfile`, then `pnpm run ci`.
-- **`deploy.yml`:** the workflow from Astro's GitHub Pages guide. It triggers on manual runs, and on pushes to `main` once the repository variable `SITE_LAUNCHED` is `true` (before launch the gate would fail every push), with read access to contents and write access to Pages and `id-token`. It uses `actions/checkout` (v7), `withastro/action` (v6) with `build-cmd: pnpm run ci:launch`, and `actions/deploy-pages` (v5). A deploy runs every gate, including the launch gate. Pages source: GitHub Actions.
+- **`deploy.yml`:** the workflow from Astro's GitHub Pages guide. It triggers on pushes to `main` and on manual runs, with read access to contents and write access to Pages and `id-token`. It uses `actions/checkout` (v7), `withastro/action` (v6) and `actions/deploy-pages` (v5). Pages source: GitHub Actions.
+  - Until the repository variable `SITE_LAUNCHED` is `true`, it deploys a preview: `build-cmd` is `pnpm run ci`, so every gate except the launch gate runs. A preview build shows a banner on every page and marks every page `noindex` (decided 2026-10-23).
+  - Once `SITE_LAUNCHED` is `true`, `build-cmd` is `pnpm run ci:launch`, so nothing deploys while a claim is Unverified or a page is unfinished.
+  - `robots.txt` cannot help a preview: on a project Pages site, crawlers read it only at the domain root, so `noindex` does the work.
 - **`thunderid-release-check.yml`:** weekly and on manual runs, with read access to contents and write access to issues. It reads the latest stable release with `gh release list -R thunder-id/thunderid --exclude-pre-releases --limit 1` (the latest is v1.0.1, 2026-08-25). If that release is newer than `thunderid-target.yaml` and no open issue has its title, it opens one in this repository.
   - GitHub disables scheduled workflows in a public repository after 60 days without activity, and emails a warning first.
   - This is accepted: the footer's "verified against" stamp shows staleness publicly in any case.

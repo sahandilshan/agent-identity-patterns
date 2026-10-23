@@ -1,8 +1,8 @@
 # Agent Identity Patterns
 
-A site that shows developers and enterprises how to build agent solutions properly, problem by problem. Each problem leads to a pattern, each pattern runs in a real demo, and ThunderID is the implementation underneath.
+A site that shows developers and enterprises how to build agent solutions properly, problem by problem. Each problem leads to a pattern built on open standards, the core flows are shown in recorded runs of a demo app (in progress), and ThunderID is the implementation underneath.
 
-**Status:** scaffold. The site builds, but every ThunderID status claim is still Unverified and every pattern page is a draft, so the launch gate refuses to deploy it.
+**Status:** preview. The site deploys to GitHub Pages as a preview: every page carries a preview banner and a noindex tag, because every ThunderID status claim is still Unverified and every pattern page is a draft. The launch build fails until every claim is verified and every page is finished.
 
 ## Develop
 

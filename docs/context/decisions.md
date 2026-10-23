@@ -27,6 +27,8 @@ The idea is a site that shows how to build agent solutions properly, for develop
 | 2026-10-22 | Dependencies are pinned to the newest versions pnpm 12 accepts under its minimum release age (astro 7.4.1, `@astrojs/mdx` 8.1.0, `@astrojs/check` 0.9.11), and the repository never adds release-age exemptions. | The plan's versions were published the day before; asking for them exactly made pnpm write exemptions that bypass a supply-chain safeguard. |
 | 2026-10-22 | Each relation is stored once: the arrows a pattern sits on come from `stack-map.yaml`, its scene from `scenes.yaml`, and the patterns that answer a problem from pattern frontmatter. | The plan listed both directions; two copies of one relation drift apart. |
 | 2026-10-22 | The content rules run from `BaseLayout`, not from the patterns index page, and the launch gate also refuses draft pages, template placeholders, scenes without a recorded trace, an unset target, and a missing footer author line. | Tying the checks to one page lets them disappear with it. The extra launch rules are the same "nothing unfinished ships" rule applied to every unfinished item the scaffold creates. |
+| 2026-10-23 | Publish the site now as a marked preview. Every build that has not passed the launch gate is a preview: a banner on every page says the ThunderID status claims are not verified and the pattern pages are drafts, and every page is `noindex`. Deploys from `main` stay previews until the repository variable `SITE_LAUNCHED` is set to `true`; after that, only builds that pass the launch gate deploy. | Sahan wants the site live. The launch gate would otherwise block every deploy until all content is verified, and a preview label keeps unverified claims from reading as the finished site. `robots.txt` under the project path is ignored by crawlers, so `noindex` does the work. |
+| 2026-10-23 | The repository is `sahandilshan/agent-identity-patterns` (public), and the site is served at `https://sahandilshan.github.io/agent-identity-patterns/`. | Sahan created the repository on his personal account and asked to push and deploy there. This settles the open account question. |
 
 ## Recommendations not yet decided
 
@@ -39,9 +41,8 @@ The idea is a site that shows how to build agent solutions properly, for develop
 
 Pattern order, tech stack, custom domain, Wayfinder fixes, pattern 7 and ownership were settled on 2026-10-22; see Decisions.
 
-- **Scaffold PR:** built on the `site-scaffold` branch, not yet committed or reviewed by Sahan. There is no GitHub remote yet.
+- **Scaffold PR:** the `site-scaffold` branch goes to `main` through a pull request on `sahandilshan/agent-identity-patterns`, merged once CI passes.
 - **Target ThunderID release:** the latest stable release is v1.0.1 (2026-08-25), but every status claim so far was code-inspected on main, and recent agent work is not in v1.0.1. Target v1.0.1 or the next release? This sets the launch date; until it is chosen every status entry stays Unverified.
-- **GitHub account:** confirm that `sahandilshan` (the account `gh` is signed in as) is the personal account for the site.
 - **Dark theme:** needed at launch? The approved mock is light only.
 - **Status labels in the mock:** proposals, verified against the target release before launch. "Govern who may call the agent" shown as Supported (the plan said "configured pattern"); ID-JAG shown as Partial (the plan said "supported with caveats"); LLM providers without static keys shown as "To verify", because "documented pattern" is not one of the three labels.
 - **Site name:** "Agent Identity Patterns" is a working title.

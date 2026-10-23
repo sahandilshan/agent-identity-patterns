@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkRef, cssRefs, htmlIds, htmlRefs } from '../scripts/check-links.mjs';
+import { checkIndexing, checkRef, cssRefs, htmlIds, htmlRefs } from '../scripts/check-links.mjs';
 import { findDashes } from '../scripts/check-text.mjs';
 
 describe('findDashes', () => {
@@ -77,5 +77,28 @@ describe('check-links', () => {
   it('rejects a fragment that the target page does not define', () => {
     expect(checkRef('/agent-identity-patterns/#arrow-nope', 'patterns/index.html', site)[0]).toContain('#arrow-nope');
     expect(checkRef('#arrow-mcp', 'patterns/index.html', site)[0]).toContain('#arrow-mcp');
+  });
+});
+
+describe('checkIndexing', () => {
+  const marked = '<head><meta name="robots" content="noindex"></head>';
+  const plain = '<head><meta name="description" content="noindex is a word here"></head>';
+
+  it('requires noindex on every page of a preview build', () => {
+    expect(checkIndexing(new Map([['index.html', marked]]), false)).toEqual([]);
+    expect(checkIndexing(new Map([['a/index.html', plain]]), false)).toEqual([
+      'a/index.html: a preview build must mark every page noindex',
+    ]);
+  });
+
+  it('forbids noindex on any page of a launch build', () => {
+    expect(checkIndexing(new Map([['index.html', plain]]), true)).toEqual([]);
+    expect(checkIndexing(new Map([['index.html', marked]]), true)).toEqual([
+      'index.html: a launch build must not mark pages noindex',
+    ]);
+  });
+
+  it('reads noindex among other robots values', () => {
+    expect(checkIndexing(new Map([['index.html', '<meta name="robots" content="noindex, nofollow">']]), true)).toHaveLength(1);
   });
 });
